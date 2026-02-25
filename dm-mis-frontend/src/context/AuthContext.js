@@ -1,27 +1,43 @@
-import { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  // Initialize state from localStorage to persist login across page refreshes
+  const [token, setToken] = useState(() => localStorage.getItem('authToken'));
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    try {
+      // Parse the saved user object, or return null if it doesn't exist
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      return null;
+    }
+  });
 
-  const login = (userData, userToken) => {
+  const login = (userData, authToken) => {
     setUser(userData);
-    setToken(userToken);
+    setToken(authToken);
+    // Persist token to localStorage
+    localStorage.setItem('authToken', authToken);
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', userToken);
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.clear();
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    // Redirect to home page to ensure a clean state
+    window.location.href = '/';
   };
 
-  return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = { user, token, login, logout };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  return useContext(AuthContext);
 };

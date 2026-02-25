@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const mongoose = require('mongoose');
 const cors = require('cors'); 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
+const disasterRoutes = require('./routes/disaster.routes');
 
 // Check for required environment variables
 if (!process.env.MONGO_URI || !process.env.JWT_SECRET) {
@@ -17,6 +19,10 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/disasters', disasterRoutes);
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const PORT = process.env.PORT || 5000;
 

@@ -11,8 +11,8 @@ exports.createUser = async (req, res) => {
     if (role === 'TALUKA_OFFICER' && (!hierarchy?.district_id || !hierarchy?.taluka_id)) {
       return res.status(400).json({ message: "District and Taluka ID are required for Taluka Officers" });
     }
-    if (role === 'VILLAGE_OFFICER' && (!hierarchy?.district_id || !hierarchy?.taluka_id || !hierarchy?.village_id)) {
-      return res.status(400).json({ message: "District, Taluka, and Village ID are required for Village Officers" });
+    if (role === 'VILLAGE_OFFICER' && (!hierarchy?.district_id || !hierarchy?.taluka_id || !hierarchy?.hobli_id || !hierarchy?.village_id)) {
+      return res.status(400).json({ message: "District, Taluka, Hobli, and Village ID are required for Village Officers" });
     }
 
     if (!password) {
@@ -38,11 +38,11 @@ exports.getUsers = async (req, res) => {
 
     // Implementation of Scoped Views
     if (role === 'DISTRICT_OFFICER') {
-      query['hierarchy.district_id'] = hierarchy.district_id;
+      query['hierarchy.district_id'] = hierarchy?.district_id;
     } else if (role === 'TALUKA_OFFICER') {
-      query['hierarchy.taluka_id'] = hierarchy.taluka_id;
+      query['hierarchy.taluka_id'] = hierarchy?.taluka_id;
     } else if (role === 'VILLAGE_OFFICER') {
-      query['hierarchy.village_id'] = hierarchy.village_id;
+      query['hierarchy.village_id'] = hierarchy?.village_id;
     }
 
     const users = await User.find(query).select('-password');

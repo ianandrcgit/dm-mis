@@ -23,12 +23,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['STATE_ADMIN', 'DISTRICT_OFFICER', 'TALUKA_OFFICER', 'VILLAGE_OFFICER'],
+    enum: ['ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'TALUKA_OFFICER', 'VILLAGE_OFFICER'],
     default: 'VILLAGE_OFFICER',
   },
   hierarchy: {
     district_id: { type: String, default: null },
     taluka_id: { type: String, default: null },
+    hobli_id: { type: String, default: null },
     village_id: { type: String, default: null },
   },
 }, {

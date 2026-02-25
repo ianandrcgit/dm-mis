@@ -6,13 +6,22 @@ const User = require('./models/User.model');
 const debug = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, { dbName: 'dm-mis' });
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@karnataka.gov.in';
     
     // Find the admin user
-    const user = await User.findOne({ email: "admin@karnataka.gov.in" });
+    const user = await User.findOne({ email: adminEmail });
     
     if (!user) {
-      console.log('❌ User not found in database');
+      console.log(`❌ Admin user with email "${adminEmail}" not found in the database.`);
       process.exit();
+    }
+
+    // Ensure the user has the ADMIN role
+    if (user.role !== 'ADMIN') {
+      console.log('\n===== UPDATING ROLE =====');
+      console.log(`User role is "${user.role}". Updating to "ADMIN".`);
+      await User.updateOne({ _id: user._id }, { $set: { role: 'ADMIN' } });
+      console.log('✅ Role updated successfully.');
     }
     
     console.log('\n===== DATABASE DEBUG =====');
@@ -24,7 +33,7 @@ const debug = async () => {
     
     // Test bcrypt compare
     console.log('\n===== TESTING PASSWORD COMPARISON =====');
-    const testPassword = 'admin_password_123';
+    const testPassword = process.env.ADMIN_PASSWORD || 'admin_password_123';
     const isMatch = await bcrypt.compare(testPassword, user.password);
     console.log('Testing password:', testPassword);
     console.log('Does it match?:', isMatch);
