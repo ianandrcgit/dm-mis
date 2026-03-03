@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 const roleHierarchyRequirements = {
   ADMIN: [],
-  STATE_OFFICER: [],
+  STATE_ADMIN: [],
   DISTRICT_OFFICER: ['district_id'],
   TALUKA_OFFICER: ['district_id', 'taluka_id'],
-  VILLAGE_OFFICER: ['district_id', 'taluka_id', 'hobli_id', 'village_id'],
+  VILLAGE_OFFICER: ['district_id', 'taluka_id', 'village_id'],
+};
+
+const normalizeRole = (value) => {
+  return (value || '').toString().trim().toUpperCase();
 };
 
 const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
@@ -13,7 +17,7 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
     name: '',
     email: '',
     role: 'VILLAGE_OFFICER',
-    hierarchy: { district_id: '', taluka_id: '', hobli_id: '', village_id: '' },
+    hierarchy: { district_id: '', taluka_id: '', village_id: '' },
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,11 +27,10 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
       setFormData({
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: normalizeRole(user.role),
         hierarchy: {
           district_id: user.hierarchy?.district_id || '',
           taluka_id: user.hierarchy?.taluka_id || '',
-          hobli_id: user.hierarchy?.hobli_id || '',
           village_id: user.hierarchy?.village_id || '',
         },
       });
@@ -40,13 +43,13 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    if (['district_id', 'taluka_id', 'hobli_id', 'village_id'].includes(name)) {
+    if (['district_id', 'taluka_id', 'village_id'].includes(name)) {
       setFormData((prev) => ({ ...prev, hierarchy: { ...prev.hierarchy, [name]: value } }));
     } else if (name === 'role') {
       setFormData((prev) => ({
         ...prev,
         role: value,
-        hierarchy: { district_id: '', taluka_id: '', hobli_id: '', village_id: '' },
+        hierarchy: { district_id: '', taluka_id: '', village_id: '' },
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -58,6 +61,10 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
     setError('');
     setLoading(true);
     try {
+      if (!authToken) {
+        throw new Error('Authentication token is missing.');
+      }
+
       const response = await fetch(`http://localhost:5000/api/users/${user._id}`, {
         method: 'PUT',
         headers: {
@@ -66,7 +73,14 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
         },
         body: JSON.stringify(formData),
       });
-      const data = await response.json();
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        data = {};
+      }
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to update user.');
       }
@@ -82,7 +96,7 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
   const requiredHierarchyFields = roleHierarchyRequirements[role] || [];
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={() => !loading && onClose()}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <form onSubmit={onSubmit}>
           <h2>Edit User: {user.name}</h2>
@@ -93,7 +107,7 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
 
           <select name="role" value={role} onChange={onChange} disabled={loading}>
             <option value="ADMIN">Admin</option>
-            <option value="STATE_OFFICER">State Officer</option>
+            <option value="STATE_ADMIN">State Admin</option>
             <option value="DISTRICT_OFFICER">District Officer</option>
             <option value="TALUKA_OFFICER">Taluka Officer</option>
             <option value="VILLAGE_OFFICER">Village Officer</option>
@@ -105,9 +119,6 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
           )}
           {requiredHierarchyFields.includes('taluka_id') && (
             <input type="text" placeholder="Taluka ID" name="taluka_id" value={hierarchy.taluka_id} onChange={onChange} required disabled={loading} />
-          )}
-          {requiredHierarchyFields.includes('hobli_id') && (
-            <input type="text" placeholder="Hobli ID" name="hobli_id" value={hierarchy.hobli_id} onChange={onChange} required disabled={loading} />
           )}
           {requiredHierarchyFields.includes('village_id') && (
             <input type="text" placeholder="Village ID" name="village_id" value={hierarchy.village_id} onChange={onChange} required disabled={loading} />

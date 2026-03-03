@@ -4,6 +4,8 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [passwordInputs, setPasswordInputs] = useState({});
+  const [passwordLoadingByUser, setPasswordLoadingByUser] = useState({});
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -22,7 +24,7 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
         if (!response.ok) {
           throw new Error(data.message || 'Failed to fetch users.');
         }
-        setUsers(data);
+        setUsers(Array.isArray(data) ? data : (data.data || []));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -57,6 +59,42 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
     }
   };
 
+  const handlePasswordInputChange = (userId, value) => {
+    setPasswordInputs((prev) => ({ ...prev, [userId]: value }));
+  };
+
+  const handlePasswordUpdate = async (userId) => {
+    const nextPassword = (passwordInputs[userId] || '').trim();
+    if (!nextPassword || nextPassword.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setError('');
+    setPasswordLoadingByUser((prev) => ({ ...prev, [userId]: true }));
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${userId}/password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ password: nextPassword }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update password.');
+      }
+
+      setPasswordInputs((prev) => ({ ...prev, [userId]: '' }));
+    } catch (err) {
+      setError(`Failed to update password: ${err.message}`);
+    } finally {
+      setPasswordLoadingByUser((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
+
   if (loading) return <p>Loading users...</p>;
   if (error) return <div className="form-message error">{error}</div>;
 
@@ -73,6 +111,7 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
               <th>Email</th>
               <th>Role</th>
               <th>Hierarchy</th>
+              <th>Set Password</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -85,9 +124,26 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
                 <td>
                   {user.hierarchy?.district_id && <div>D: {user.hierarchy.district_id}</div>}
                   {user.hierarchy?.taluka_id && <div>T: {user.hierarchy.taluka_id}</div>}
-                  {user.hierarchy?.hobli_id && <div>H: {user.hierarchy.hobli_id}</div>}
                   {user.hierarchy?.village_id && <div>V: {user.hierarchy.village_id}</div>}
-                  {(user.role === 'ADMIN' || user.role === 'STATE_OFFICER') && 'State Level'}
+                  {user.role === 'STATE_ADMIN' && 'State Level'}
+                  {user.role === 'ADMIN' && 'System Admin'}
+                </td>
+                <td>
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={passwordInputs[user._id] || ''}
+                    onChange={(e) => handlePasswordInputChange(user._id, e.target.value)}
+                    minLength={6}
+                    style={{ marginBottom: '0.5rem' }}
+                  />
+                  <button
+                    onClick={() => handlePasswordUpdate(user._id)}
+                    disabled={!!passwordLoadingByUser[user._id]}
+                    className="edit-button"
+                  >
+                    {passwordLoadingByUser[user._id] ? 'Saving...' : 'Update Password'}
+                  </button>
                 </td>
                 <td>
                   <button onClick={() => onEditUser(user)} className="edit-button">

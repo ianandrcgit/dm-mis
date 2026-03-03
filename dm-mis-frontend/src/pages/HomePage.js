@@ -14,11 +14,14 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const normalizeRole = (value) => (value || '').toString().trim().toUpperCase();
+
   const getRedirectPath = (userRole) => {
     switch (userRole) {
       case 'ADMIN':
         return '/dashboard';
-      case 'STATE_OFFICER':
+      case 'STATE_ADMIN':
+        return '/generic-dashboard';
       case 'DISTRICT_OFFICER':
       case 'TALUKA_OFFICER':
         return '/generic-dashboard';
@@ -49,12 +52,15 @@ const HomePage = () => {
     try {
       const data = await loginUser(email, password);
 
-      if (data.user.role !== role) {
-        throw new Error(`Access Denied: You have selected the wrong user type for this account.`);
+      const selectedRole = normalizeRole(role);
+      const actualRole = normalizeRole(data?.user?.role);
+
+      if (actualRole !== selectedRole) {
+        throw new Error(`Access Denied: selected "${selectedRole}" but account is "${actualRole}".`);
       }
 
-      login(data.user, data.token);
-      navigate(getRedirectPath(data.user.role));
+      login({ ...data.user, role: actualRole }, data.token);
+      navigate(getRedirectPath(actualRole));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -81,7 +87,7 @@ const HomePage = () => {
               <label htmlFor="user-type" style={{ textAlign: 'left', display: 'block', marginBottom: '5px' }}>User Type</label>
               <select id="user-type" value={role} onChange={handleRoleChange} disabled={loading} style={{ marginBottom: '1rem' }}>
                 <option value="ADMIN">Admin</option>
-                <option value="STATE_OFFICER">State Officer</option>
+                <option value="STATE_ADMIN">State Admin</option>
                 <option value="DISTRICT_OFFICER">District Officer</option>
                 <option value="TALUKA_OFFICER">Taluka Officer</option>
                 <option value="VILLAGE_OFFICER">Village Officer (VAO)</option>

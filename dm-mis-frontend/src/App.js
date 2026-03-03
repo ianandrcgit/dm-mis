@@ -31,7 +31,7 @@ function App() {
           <Route
             path="/generic-dashboard"
             element={
-              <ProtectedRoute allowedRoles={['STATE_OFFICER', 'DISTRICT_OFFICER', 'TALUKA_OFFICER']}>
+              <ProtectedRoute allowedRoles={['STATE_ADMIN', 'DISTRICT_OFFICER', 'TALUKA_OFFICER']}>
                 <GenericDashboard />
               </ProtectedRoute>
             }
