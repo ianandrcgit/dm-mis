@@ -1,30 +1,56 @@
-const API_URL = 'http://localhost:5000/api/disasters';
+import { buildApiUrl } from '../config/api';
 
-/**
- * Creates a new disaster report by sending data to the backend API.
- * @param {string} authToken - The user's authentication token.
- * @param {object} reportData - The main data for the report (e.g., type, description, beneficiary).
- * @returns {Promise<object>} The response data from the server.
- * @throws {Error} If the auth token is missing or the API call fails.
- */
-export const createDisasterReport = async (authToken, reportData) => {
+const API_URL = buildApiUrl('/api/disasters');
+
+export const createDisasterReport = async (authToken, formData, photo, submissionType = 'REPORTED') => {
   if (!authToken) {
     throw new Error('Authentication token is missing.');
+  }
+
+  const formDataPayload = new FormData();
+  formDataPayload.append('type', formData.type);
+  formDataPayload.append('loss_type', formData.loss_type);
+  formDataPayload.append('description', formData.description);
+  formDataPayload.append('beneficiary', JSON.stringify(formData.beneficiary));
+  formDataPayload.append('submissionType', submissionType);
+
+  if (photo) {
+    formDataPayload.append('photo', photo);
   }
 
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
-    body: JSON.stringify(reportData),
+    body: formDataPayload,
   });
 
   const data = await response.json();
-
   if (!response.ok) {
-    throw new Error(data.message || 'Failed to create disaster report.');
+    throw new Error(data.message || 'Failed to report disaster.');
+  }
+
+  return data;
+};
+
+export const updateDisasterStatus = async (authToken, disasterId, status) => {
+  if (!authToken) {
+    throw new Error('Authentication token is missing.');
+  }
+
+  const response = await fetch(`${API_URL}/${disasterId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to update disaster status.');
   }
 
   return data;

@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const router = express.Router();
-const { createDisaster, getDisasters } = require('../controllers/disaster.controller');
+const { createDisaster, getDisasters, updateDisasterStatus } = require('../controllers/disaster.controller');
 const { protect, authorizeRoles } = require('../middleware/auth.middleware');
 
 const UPLOADS_DIR = 'uploads/';
@@ -35,5 +35,7 @@ router.use(protect);
 router.route('/')
   .get(getDisasters)
   .post(authorizeRoles('VILLAGE_OFFICER'), upload.single('photo'), createDisaster);
+
+router.patch('/:id/status', updateDisasterStatus);
 
 module.exports = router;

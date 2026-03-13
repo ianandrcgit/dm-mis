@@ -29,14 +29,15 @@ const DisasterEntryForm = ({ authToken, onDisasterReported }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    const currentSubmissionType = e?.nativeEvent?.submitter?.value || 'REPORTED';
     setError('');
     setSuccess('');
     setLoading(true);
 
     try {
-      const data = await createDisasterReport(authToken, formData);
-
-      setSuccess(`Disaster reported successfully! (ID: ${data.data._id})`);
+      const data = await createDisasterReport(authToken, formData, null, currentSubmissionType);
+      const successLabel = currentSubmissionType === 'DRAFT' ? 'Draft saved successfully' : 'Disaster submitted successfully';
+      setSuccess(`${successLabel}! (ID: ${data.data._id})`);
       // Reset form
       setFormData({
         type: 'FLOOD',
@@ -89,8 +90,16 @@ const DisasterEntryForm = ({ authToken, onDisasterReported }) => {
         <label htmlFor="description">Description</label>
         <textarea id="description" placeholder="Provide details about the incident..." name="description" value={description} onChange={onChange} required disabled={loading} rows="4" />
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" value="REPORTED" disabled={loading}>
           {loading ? 'Submitting...' : 'Submit Report'}
+        </button>
+        <button
+          type="submit"
+          value="DRAFT"
+          disabled={loading}
+          style={{ marginTop: '10px', backgroundColor: '#607d8b' }}
+        >
+          Save as Draft
         </button>
       </form>
     </div>

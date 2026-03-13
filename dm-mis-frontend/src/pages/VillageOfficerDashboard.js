@@ -26,7 +26,7 @@ const VillageOfficerDashboard = () => {
       </header>
       <main className="dashboard-content">
         <DisasterEntryForm authToken={token} onDisasterReported={handleDisasterReported} />
-        <DisasterList authToken={token} refreshKey={disasterListKey} />
+        <DisasterList authToken={token} refreshKey={disasterListKey} userRole={user?.role} />
       </main>
     </div>
   );

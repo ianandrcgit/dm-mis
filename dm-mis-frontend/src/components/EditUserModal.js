@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { buildApiUrl } from '../config/api';
 
 const roleHierarchyRequirements = {
   ADMIN: [],
@@ -65,7 +66,7 @@ const EditUserModal = ({ user, authToken, onClose, onUserUpdated }) => {
         throw new Error('Authentication token is missing.');
       }
 
-      const response = await fetch(`http://localhost:5000/api/users/${user._id}`, {
+      const response = await fetch(buildApiUrl(`/api/users/${user._id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

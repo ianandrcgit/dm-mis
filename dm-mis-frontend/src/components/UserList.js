@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { buildApiUrl } from '../config/api';
 
 const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
   const [users, setUsers] = useState([]);
@@ -15,7 +16,7 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
         if (!authToken) {
           throw new Error('Authentication token is missing.');
         }
-        const response = await fetch('http://localhost:5000/api/users', {
+        const response = await fetch(buildApiUrl('/api/users'), {
           headers: {
             'Authorization': `Bearer ${authToken}`,
           },
@@ -41,7 +42,7 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const response = await fetch(buildApiUrl(`/api/users/${userId}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -73,7 +74,7 @@ const UserList = ({ authToken, refreshKey, onUserDeleted, onEditUser }) => {
     setError('');
     setPasswordLoadingByUser((prev) => ({ ...prev, [userId]: true }));
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/password`, {
+      const response = await fetch(buildApiUrl(`/api/users/${userId}/password`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -1,3 +1,5 @@
+import { buildApiUrl } from '../config/api';
+
 export const createDisasterReport = async (authToken, formData, photo) => {
   if (!authToken) {
     throw new Error('Authentication token is missing.');
@@ -12,7 +14,7 @@ export const createDisasterReport = async (authToken, formData, photo) => {
     formDataPayload.append('photo', photo);
   }
 
-  const response = await fetch('http://localhost:5000/api/disasters', {
+  const response = await fetch(buildApiUrl('/api/disasters'), {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${authToken}`,

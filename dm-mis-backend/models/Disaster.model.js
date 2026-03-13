@@ -23,7 +23,7 @@ const DisasterSchema = new mongoose.Schema({
   location: {
     district_id: { type: String, required: true },
     taluka_id: { type: String, required: true },
-    hobli_id: { type: String, required: true },
+    hobli_id: { type: String, default: null },
     village_id: { type: String, required: true },
   },
   photo_url: {
@@ -36,7 +36,7 @@ const DisasterSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['REPORTED', 'ACKNOWLEDGED', 'IN_PROGRESS', 'RESOLVED'],
+    enum: ['DRAFT', 'REPORTED', 'ACKNOWLEDGED', 'IN_PROGRESS', 'RESOLVED'],
     default: 'REPORTED',
   },
 }, {

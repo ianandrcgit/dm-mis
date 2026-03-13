@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buildApiUrl } from '../config/api';
 
 // A helper to define which fields are required for each role, making the rendering logic cleaner.
 const roleHierarchyRequirements = {
@@ -60,7 +61,7 @@ const CreateUserForm = ({ authToken, onUserCreated }) => { // Accept authToken a
         throw new Error('Authentication token is missing.');
       }
 
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch(buildApiUrl('/api/users'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

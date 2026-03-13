@@ -18,7 +18,7 @@ const GenericDashboard = () => {
         <button onClick={logout} className="logout-button">Logout</button>
       </header>
       <main>
-        <DisasterList authToken={token} />
+        <DisasterList authToken={token} userRole={user?.role} />
       </main>
     </div>
   );
