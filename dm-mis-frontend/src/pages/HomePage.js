@@ -7,8 +7,8 @@ import './LoginPage.css'; // Reuse login form styles
 
 const HomePage = () => {
   const [role, setRole] = useState('ADMIN');
-  const [email, setEmail] = useState('admin@karnataka.gov.in');
-  const [password, setPassword] = useState('admin_password_123');
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -37,8 +37,8 @@ const HomePage = () => {
     setRole(newRole);
     // Pre-fill credentials for Admin for convenience
     if (newRole === 'ADMIN') {
-      setEmail('admin@karnataka.gov.in');
-      setPassword('admin_password_123');
+      setEmail('admin@example.com');
+      setPassword('password123');
     } else {
       setEmail('');
       setPassword('');
